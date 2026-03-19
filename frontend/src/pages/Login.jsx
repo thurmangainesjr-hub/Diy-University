@@ -3,13 +3,15 @@
  * Authentication for learners, faculty, and admins
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiMail, FiLock, FiUser, FiArrowRight, FiBook } from 'react-icons/fi';
+import { FiMail, FiLock, FiUser, FiArrowRight, FiBook, FiAlertCircle } from 'react-icons/fi';
+import { useAuth } from '../context/AuthContext';
 
 function Login() {
   const navigate = useNavigate();
+  const { login, register, isAuthenticated, error: authError } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -17,16 +19,38 @@ function Login() {
     password: ''
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/');
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // Simulate login/signup
-    setTimeout(() => {
+    try {
+      let result;
+      if (isSignUp) {
+        result = await register(formData.name, formData.email, formData.password);
+      } else {
+        result = await login(formData.email, formData.password);
+      }
+
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || 'Authentication failed');
+      }
+    } catch (err) {
+      setError('Connection error. Please try again.');
+    } finally {
       setLoading(false);
-      navigate('/');
-    }, 1000);
+    }
   };
 
   const handleChange = (e) => {
@@ -125,6 +149,13 @@ function Login() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {(error || authError) && (
+              <div className="p-3 rounded-lg bg-red-500/20 border border-red-500/50 flex items-center gap-2 text-red-400">
+                <FiAlertCircle />
+                <span>{error || authError}</span>
+              </div>
+            )}
+
             {isSignUp && (
               <div>
                 <label className="block text-gray-400 text-sm mb-2">Full Name</label>
