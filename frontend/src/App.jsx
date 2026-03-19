@@ -9,7 +9,6 @@ import Layout from './components/Layout/Layout';
 import Dashboard from './pages/Dashboard';
 import Schools from './pages/Schools';
 import Courses from './pages/Courses';
-import Lesson from './pages/Lesson';
 import Faculty from './pages/Faculty';
 import Certifications from './pages/Certifications';
 import Workforce from './pages/Workforce';
@@ -26,8 +25,7 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="schools" element={<Schools />} />
         <Route path="schools/:schoolId" element={<Courses />} />
-        <Route path="course/:courseId" element={<Courses />} />
-        <Route path="lesson/:lessonId" element={<Lesson />} />
+        <Route path="courses/:courseId" element={<Courses />} />
         <Route path="faculty" element={<Faculty />} />
         <Route path="certifications" element={<Certifications />} />
         <Route path="workforce" element={<Workforce />} />
