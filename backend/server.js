@@ -3,17 +3,17 @@
  * Production-Ready Education, Certification & Workforce Development API
  */
 
+// Load environment variables before the other modules read them
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import authRoutes from './routes/auth.js';
 import facultyRoutes from './routes/faculty.js';
 import User from './models/User.js';
 import { protect, optionalAuth } from './middleware/auth.js';
 
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3003;

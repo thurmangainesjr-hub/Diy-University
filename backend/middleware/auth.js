@@ -5,6 +5,10 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+// In production a missing secret stops the server instead of using a value that is public on GitHub
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET must be set in production');
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'diy-university-secret-key-change-in-production';
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 

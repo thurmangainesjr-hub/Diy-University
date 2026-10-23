@@ -13,7 +13,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiUsers, FiMessageCircle, FiAlertTriangle, FiCheckCircle,
-  FiTarget, FiBrain, FiSend, FiX, FiChevronRight
+  FiTarget, FiCpu, FiSend, FiX, FiChevronRight
 } from 'react-icons/fi';
 
 // Administration Faculty
@@ -457,7 +457,7 @@ function ProfessorModal({ professor, onClose }) {
         <div className="px-6 py-4 bg-dark-700/50 border-b border-dark-600">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <FiBrain className="text-primary" />
+              <FiCpu className="text-primary" />
               <span className="text-gray-400 text-sm">Confidence:</span>
               <span className="text-white font-bold">{professor.confidence}%</span>
             </div>
