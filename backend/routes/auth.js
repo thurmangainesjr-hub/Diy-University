@@ -4,43 +4,41 @@
  */
 
 import express from 'express';
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
 import { generateToken, protect } from '../middleware/auth.js';
+import { demoUsers, isDbConnected } from '../services/demoStore.js';
 
 const router = express.Router();
 
-// In-memory users for demo mode
-const demoUsers = new Map();
-
-// Check if MongoDB is connected
-const isDbConnected = () => mongoose.connection.readyState === 1;
-
 // Create demo user object
-const createDemoUser = (name, email, password) => ({
-  _id: `demo-${Date.now()}`,
-  id: `demo-${Date.now()}`,
-  name,
-  email,
-  password: bcrypt.hashSync(password, 10),
-  role: 'learner',
-  avatar: '👤',
-  bio: '',
-  location: '',
-  enrolledCourses: [],
-  completedCourses: [],
-  certificates: [],
-  badges: [{ id: 'first-steps', name: 'First Steps', earnedAt: new Date() }],
-  stats: {
-    coursesCompleted: 0,
-    certificatesEarned: 0,
-    learningHours: 0,
-    currentStreak: 1,
-    lastActiveAt: new Date()
-  },
-  createdAt: new Date()
-});
+// Ids must be unique even when two people sign up in the same millisecond
+const createDemoUser = (name, email, password) => {
+  const id = `demo-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+  return {
+    _id: id,
+    id,
+    name,
+    email,
+    password: bcrypt.hashSync(password, 10),
+    role: 'learner',
+    avatar: '👤',
+    bio: '',
+    location: '',
+    enrolledCourses: [],
+    completedCourses: [],
+    certificates: [],
+    badges: [{ id: 'first-steps', name: 'First Steps', earnedAt: new Date() }],
+    stats: {
+      coursesCompleted: 0,
+      certificatesEarned: 0,
+      learningHours: 0,
+      currentStreak: 1,
+      lastActiveAt: new Date()
+    },
+    createdAt: new Date()
+  };
+};
 
 // @route   POST /api/auth/register
 // @desc    Register new user

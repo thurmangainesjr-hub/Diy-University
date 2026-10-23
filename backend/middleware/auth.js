@@ -4,6 +4,7 @@
 
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { isDbConnected, findDemoUserById } from '../services/demoStore.js';
 
 // In production a missing secret stops the server instead of using a value that is public on GitHub
 if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
@@ -38,6 +39,18 @@ export const protect = async (req, res, next) => {
   try {
     // Verify token
     const decoded = jwt.verify(token, JWT_SECRET);
+
+    // Demo mode has no database, so look the user up in memory
+    if (!isDbConnected()) {
+      req.user = findDemoUserById(decoded.id);
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          error: 'User not found'
+        });
+      }
+      return next();
+    }
 
     // Get user from token
     req.user = await User.findById(decoded.id);
@@ -86,7 +99,7 @@ export const optionalAuth = async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = await User.findById(decoded.id);
+      req.user = isDbConnected() ? await User.findById(decoded.id) : findDemoUserById(decoded.id);
     } catch (error) {
       // Token invalid, but continue without user
     }
