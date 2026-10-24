@@ -18,11 +18,14 @@ import { protect, optionalAuth } from './middleware/auth.js';
 const app = express();
 const PORT = process.env.PORT || 3003;
 
-// Database connection
+// Database connection (tests without MONGODB_URI run in demo mode)
 let dbConnected = false;
-connectDB().then(conn => {
-  dbConnected = !!conn;
-});
+const skipDb = process.env.NODE_ENV === 'test' && !process.env.MONGODB_URI;
+export const dbReady = skipDb
+  ? Promise.resolve()
+  : connectDB().then(conn => {
+    dbConnected = !!conn;
+  });
 
 // Middleware
 app.use(cors({
@@ -30,7 +33,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
-app.use(morgan('dev'));
+if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
 // ============================================
 // STATIC DATA (Fallback when no DB)
@@ -173,18 +176,19 @@ app.post('/api/courses/:id/enroll', protect, async (req, res) => {
       return res.status(400).json({ success: false, error: 'Already enrolled in this course' });
     }
 
-    // Add enrollment
+    // Add enrollment (demo users live in memory)
+    const enrollment = {
+      courseId,
+      enrolledAt: new Date(),
+      progress: 0,
+      completedLessons: []
+    };
     if (dbConnected) {
       await User.findByIdAndUpdate(req.user._id, {
-        $push: {
-          enrolledCourses: {
-            courseId,
-            enrolledAt: new Date(),
-            progress: 0,
-            completedLessons: []
-          }
-        }
+        $push: { enrolledCourses: enrollment }
       });
+    } else {
+      req.user.enrolledCourses.push(enrollment);
     }
 
     res.json({ success: true, message: 'Enrolled successfully', data: { courseId } });
@@ -198,6 +202,15 @@ app.put('/api/courses/:id/progress', protect, async (req, res) => {
     const { lessonId, progress } = req.body;
     const courseId = req.params.id;
 
+    const enrolled = req.user.enrolledCourses?.some(ec => ec.courseId === courseId);
+    if (!enrolled) {
+      return res.status(400).json({ success: false, error: 'Not enrolled in this course' });
+    }
+
+    if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+      return res.status(400).json({ success: false, error: 'Progress must be a number from 0 to 100' });
+    }
+
     if (dbConnected) {
       await User.findOneAndUpdate(
         { _id: req.user._id, 'enrolledCourses.courseId': courseId },
@@ -206,6 +219,12 @@ app.put('/api/courses/:id/progress', protect, async (req, res) => {
           $addToSet: { 'enrolledCourses.$.completedLessons': lessonId }
         }
       );
+    } else {
+      const enrollment = req.user.enrolledCourses.find(ec => ec.courseId === courseId);
+      enrollment.progress = progress;
+      if (lessonId && !enrollment.completedLessons.includes(lessonId)) {
+        enrollment.completedLessons.push(lessonId);
+      }
     }
 
     res.json({ success: true, message: 'Progress updated' });
@@ -365,7 +384,8 @@ app.get('/api/ecosystem/status', (req, res) => {
 // START SERVER
 // ============================================
 
-app.listen(PORT, () => {
+// Tests start their own server on a free port
+if (process.env.NODE_ENV !== 'test') app.listen(PORT, () => {
   console.log(`
 ╔══════════════════════════════════════════════════════════════╗
 ║                                                              ║
