@@ -16,6 +16,8 @@ import CommandCenter from './pages/CommandCenter';
 import Studio from './pages/Studio';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
+import UniversityAdaptationEngine from './pages/UniversityAdaptationEngine';
+import UniversityFlipbook from './pages/UniversityFlipbook';
 
 function App() {
   return (
@@ -32,6 +34,8 @@ function App() {
         <Route path="command-center" element={<CommandCenter />} />
         <Route path="studio" element={<Studio />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="adaptation-engine" element={<UniversityAdaptationEngine />} />
+        <Route path="flipbook" element={<UniversityFlipbook />} />
       </Route>
     </Routes>
   );

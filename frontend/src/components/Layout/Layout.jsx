@@ -29,7 +29,9 @@ const NAV_ITEMS = [
   { path: '/certifications', icon: FiAward, label: 'Certifications' },
   { path: '/workforce', icon: FiBriefcase, label: 'Workforce' },
   { path: '/command-center', icon: FiCommand, label: 'Command Center' },
-  { path: '/studio', icon: FiEdit3, label: 'Studio' }
+  { path: '/studio', icon: FiEdit3, label: 'Studio' },
+  { path: '/adaptation-engine', icon: FiZap, label: 'Adaptation Engine' },
+  { path: '/flipbook', icon: FiBookOpen, label: 'Guides' }
 ];
 
 function Layout() {
